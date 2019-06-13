@@ -1,0 +1,38 @@
+FROM raspbian/stretch
+
+MAINTAINER fuhongbo@live.cn
+
+ENV http_proxy $HTTP_PROXY
+ENV https_proxy $HTTP_PROXY
+
+RUN mv /etc/apt/sources.list /etc/apt/sources.list.bak && \
+    echo "deb http://mirrors.ustc.edu.cn/raspbian/raspbian/ stretch main contrib non-free rpi" >/etc/apt/sources.list
+
+ADD ./openvino /opt/intel/openvino
+
+RUN apt-get update &&\
+    apt-get autoremove -y &&\
+    apt-get install -y --no-install-recommends \
+      cpio \
+      lsb-release \
+      python3.5 \
+      python3-pip \
+      python3-dev \
+      sudo \
+      libusb-1.0-0 libboost-program-options1.58.0 \
+      libboost-thread1.58.0 libboost-filesystem1.58.0 \
+      libudev1 wget libgtk3.0-cil libgtk3.0-cil-dev libatlas-base-dev \
+      && \
+      rm -rf /var/lib/apt/lists/* && \
+      echo "source /opt/intel/openvino/bin/setupvars.sh" >> ~/.bashrc
+
+RUN sed -i "s|<INSTALLDIR>|/opt/intel/openvino|" /opt/intel/openvino/bin/setupvars.sh
+
+RUN python3.5 -m pip install setuptools -U pip && \
+        pip install numpy && \
+        rm -rf /var/lib/apt/lists/* && \
+        apt-get clean && \
+        apt-get autoremove
+
+
+
